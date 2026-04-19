@@ -167,6 +167,6 @@ else
   fi
   echo ""
   echo "다음 단계:"
-  echo "  1. Claude Code 를 재시작해 /fts-transform 명령어 등록."
+  echo "  1. Claude Code 를 재시작하면 /fts-transform 명령어가 자동으로 등록 됩니다."
   echo "  2. 아무 프로젝트 디렉토리에서 /fts-transform 실행."
 fi
