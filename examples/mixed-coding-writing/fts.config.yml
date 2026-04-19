@@ -1,0 +1,31 @@
+# Q&A 응답 스냅샷 — coding + writing 혼합 (Python + 기술 문서)
+version: "1.0.0"
+template_version: "1.0.0"
+generated_at: "2026-04-19T00:00:00+09:00"
+
+# ── 공통 답변 ──
+types: [coding, writing]
+language: "한국어"
+project_name: "ml-toolkit-docs"
+planning_dir: ".planning"
+agent_model: "sonnet"
+optional_cmds: [fts-verify, fts-security-gate]
+overwrite_policy: "backup-then-overwrite"
+
+# ── coding 타입 답변 ──
+primary_lang: "Python"
+build_cmds:
+  - "pytest"
+lint_cmds:
+  - "ruff check ."
+test_cmds:
+  - "pytest"
+secrets:
+  - "API 키"
+external_services:
+  - "HuggingFace Hub"
+
+# ── writing 타입 답변 ──
+doc_type: "기술 문서"
+doc_format: "Markdown"
+writing_lint_tool: "vale"

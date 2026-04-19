@@ -1,0 +1,731 @@
+# fts-templates manifest
+# /fts-transform 이 읽는 단일 소스. 질문·변수·파일·조건을 선언한다.
+version: "1.0.0"
+
+# ──────────────────────────────────────────────
+# Q&A 흐름
+# ──────────────────────────────────────────────
+questions:
+  # ── 모드 선택 (fts.config.yml 존재 시에만) ──
+  - id: M1
+    header: 모드
+    question: "기존 설정(fts.config.yml)이 발견됨. 어떻게 처리할까?"
+    when: "config_exists"
+    options:
+      - value: modify
+        label: "항목별 선택 수정 (modify)"
+      - value: regenerate
+        label: "전체 다시 (regenerate)"
+      - value: sync
+        label: "템플릿만 최신화 (sync)"
+      - value: cancel
+        label: "중단"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: M2
+    header: 수정 대상
+    question: "어떤 항목을 바꿀까? (다중 선택)"
+    when: "M1 == modify"
+    options:
+      - value: types
+        label: "프로젝트 타입"
+      - value: language
+        label: "언어"
+      - value: build_gate
+        label: "빌드 gate"
+      - value: optional_cmds
+        label: "옵션 명령어"
+      - value: agent_model
+        label: "에이전트 모델"
+      - value: security
+        label: "보안 설정"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  # ── 공통 질문 ──
+  - id: C1
+    header: 프로젝트 타입
+    question: "이 프로젝트는 어떤 성격? (다중 선택)"
+    when: "always"
+    skip_when: "M1 == modify and not includes(M2, types)"
+    options:
+      - value: coding
+        label: "코딩 (타입체크·빌드·테스트)"
+      - value: research
+        label: "리서치 (문헌 조사·자료 정리)"
+      - value: design
+        label: "디자인 (UI/UX·에셋)"
+      - value: writing
+        label: "플래닝·글쓰기 (기획서·문서)"
+      - value: custom
+        label: "기타 (직접 입력 — 공통 템플릿만 설치)"
+    multi: true
+
+  - id: C2
+    header: 언어
+    question: "대화·커밋에 쓸 언어"
+    when: "always"
+    skip_when: "M1 == modify and not includes(M2, language)"
+    options:
+      - value: "한국어"
+        label: "한국어"
+      - value: "영어"
+        label: "영어"
+      - value: "혼용"
+        label: "혼용 (한국어 기본 + 영어 코드 식별자 허용)"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: C3
+    header: 프로젝트명
+    question: "프로젝트 이름(slug) — 예: my-project"
+    when: "always"
+    skip_when: "M1 == modify"
+    options: []
+    multi: false
+    free_input: true
+
+  - id: C4
+    header: Planning 경로
+    question: "planning 파일들을 저장할 디렉토리"
+    when: "always"
+    skip_when: "M1 == modify"
+    options:
+      - value: ".planning"
+        label: ".planning (기본값)"
+      - value: custom
+        label: "사용자 지정"
+    multi: false
+
+  - id: C5
+    header: 에이전트 모델
+    question: "서브에이전트 기본 모델"
+    when: "always"
+    skip_when: "M1 == modify and not includes(M2, agent_model)"
+    options:
+      - value: inherit
+        label: "inherit (부모 대화와 동일)"
+      - value: claude-opus-4-7
+        label: "opus (claude-opus-4-7)"
+      - value: claude-sonnet-4-6
+        label: "sonnet (claude-sonnet-4-6)"
+      - value: claude-haiku-4-5-20251001
+        label: "haiku (claude-haiku-4-5-20251001)"
+      - value: custom
+        label: "기타 (직접 입력 — 모델 ID)"
+    multi: false
+
+  - id: C6
+    header: 옵션 명령어
+    question: "설치할 옵션 명령어 (다중 선택)"
+    when: "always"
+    skip_when: "M1 == modify and not includes(M2, optional_cmds)"
+    options:
+      - value: fts-verify
+        label: "fts-verify (plan 품질 10차원 검증)"
+      - value: fts-security-gate
+        label: "fts-security-gate (코딩 프로젝트 전용)"
+        requires_types: [coding]
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  - id: C7
+    header: 덮어쓰기 정책
+    question: "기존 파일 충돌 시 처리 방식"
+    when: "always"
+    skip_when: "M1 == sync"
+    options:
+      - value: backup_overwrite
+        label: "백업(.bak-{TS}) 후 덮어쓰기 (기본값)"
+      - value: overwrite
+        label: "그냥 덮어쓰기"
+      - value: skip
+        label: "건너뛰기"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  # ── coding 타입 전용 ──
+  - id: D1
+    header: 주 언어
+    question: "주 언어/런타임"
+    when: "includes(C1, coding)"
+    skip_when: "M1 == modify and not includes(M2, build_gate)"
+    options:
+      - value: "TS/Node"
+        label: "TypeScript / Node.js"
+      - value: Python
+        label: "Python"
+      - value: Rust
+        label: "Rust"
+      - value: Go
+        label: "Go"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: D2
+    header: 빌드 gate
+    question: "done 전 강제 실행할 빌드·타입체크 명령어 (다중 선택)"
+    when: "includes(C1, coding)"
+    skip_when: "M1 == modify and not includes(M2, build_gate)"
+    options:
+      - value: "npx tsc --noEmit"
+        label: "npx tsc --noEmit (TypeScript)"
+      - value: "cargo check"
+        label: "cargo check (Rust)"
+      - value: "go build ./..."
+        label: "go build ./... (Go)"
+      - value: pytest
+        label: "pytest (Python)"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  - id: D3
+    header: 린트·포맷
+    question: "선택적 린트·포맷 검증 명령어 (없으면 '없음' 선택)"
+    when: "includes(C1, coding)"
+    skip_when: "M1 == modify and not includes(M2, build_gate)"
+    options:
+      - value: none
+        label: "없음"
+      - value: eslint
+        label: "eslint"
+      - value: biome
+        label: "biome"
+      - value: ruff
+        label: "ruff (Python)"
+      - value: rustfmt
+        label: "rustfmt (Rust)"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: D4
+    header: 테스트
+    question: "테스트 명령어 (없으면 '없음' 선택)"
+    when: "includes(C1, coding)"
+    skip_when: "M1 == modify and not includes(M2, build_gate)"
+    options:
+      - value: none
+        label: "없음"
+      - value: "npm test"
+        label: "npm test"
+      - value: pytest
+        label: "pytest"
+      - value: "cargo test"
+        label: "cargo test"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: D5
+    header: 시크릿 종류
+    question: "관리할 시크릿 종류 (다중 선택, fts-security-gate 설치 시 적용)"
+    when: "includes(C1, coding) and includes(C6, fts-security-gate)"
+    skip_when: "M1 == modify and not includes(M2, security)"
+    options:
+      - value: api_key
+        label: "API 키"
+      - value: wallet
+        label: "지갑·seed·keypair"
+      - value: rpc_url
+        label: "RPC URL"
+      - value: db_cred
+        label: "DB 크리덴셜"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  - id: D6
+    header: 외부 서비스
+    question: "의존하는 외부 서비스 목록 (쉼표 구분, 예: Solana RPC, Telegram Bot)"
+    when: "includes(C1, coding) and includes(C6, fts-security-gate)"
+    skip_when: "M1 == modify and not includes(M2, security)"
+    options: []
+    multi: false
+    free_input: true
+
+  # ── research 타입 전용 ──
+  - id: R1
+    header: 자료 종류
+    question: "주로 쓰는 자료 (다중 선택)"
+    when: "includes(C1, research)"
+    options:
+      - value: academic
+        label: "학술 논문"
+      - value: web
+        label: "웹 문서"
+      - value: internal
+        label: "내부 자료"
+      - value: interview
+        label: "인터뷰"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  - id: R2
+    header: 인용 포맷
+    question: "인용 스타일"
+    when: "includes(C1, research)"
+    options:
+      - value: "Markdown 각주"
+        label: "Markdown 각주 ([^1])"
+      - value: APA
+        label: "APA"
+      - value: Chicago
+        label: "Chicago"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: R3
+    header: 민감 정보
+    question: "개인정보/내부기밀 포함 여부"
+    when: "includes(C1, research)"
+    options:
+      - value: sensitive
+        label: "있음 — 보안 게이트 설치"
+      - value: none
+        label: "없음"
+      - value: partial
+        label: "기타 (직접 입력 — 부분 민감)"
+    multi: false
+
+  # ── design 타입 전용 ──
+  - id: S1
+    header: 디자인 툴
+    question: "주 디자인 툴 (다중 선택)"
+    when: "includes(C1, design)"
+    options:
+      - value: Figma
+        label: "Figma"
+      - value: Sketch
+        label: "Sketch"
+      - value: "Adobe Creative Cloud"
+        label: "Adobe Creative Cloud"
+      - value: "Gemini Stitch"
+        label: "Gemini Stitch"
+      - value: "Claude Design"
+        label: "Claude Design"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  - id: S2
+    header: 에셋 경로
+    question: "산출물 저장 경로"
+    when: "includes(C1, design)"
+    options:
+      - value: "assets/"
+        label: "assets/ (기본값)"
+      - value: "design/"
+        label: "design/"
+      - value: custom
+        label: "사용자 지정"
+    multi: false
+
+  - id: S3
+    header: 접근성 기준
+    question: "WCAG 준수 레벨"
+    when: "includes(C1, design)"
+    options:
+      - value: A
+        label: "A"
+      - value: AA
+        label: "AA (권장)"
+      - value: AAA
+        label: "AAA"
+      - value: none
+        label: "해당없음"
+      - value: custom
+        label: "기타 (직접 입력 — 다른 표준)"
+    multi: false
+
+  # ── writing 타입 전용 ──
+  - id: W1
+    header: 문서 종류
+    question: "주 산출물 (다중 선택)"
+    when: "includes(C1, writing)"
+    options:
+      - value: "블로그/기사"
+        label: "블로그/기사"
+      - value: "기획서"
+        label: "기획서"
+      - value: "제안서"
+        label: "제안서"
+      - value: "기술 문서"
+        label: "기술 문서"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: true
+
+  - id: W2
+    header: 포맷
+    question: "주 포맷"
+    when: "includes(C1, writing)"
+    options:
+      - value: Markdown
+        label: "Markdown"
+      - value: Docs
+        label: "Google Docs / Word"
+      - value: Notion
+        label: "Notion"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+  - id: W3
+    header: 맞춤법 도구
+    question: "사용할 linting 도구 (없으면 '없음')"
+    when: "includes(C1, writing)"
+    options:
+      - value: none
+        label: "없음"
+      - value: textlint
+        label: "textlint"
+      - value: vale
+        label: "vale"
+      - value: custom
+        label: "기타 (직접 입력)"
+    multi: false
+
+# ──────────────────────────────────────────────
+# 변수 정의
+# source: Q&A 응답 ID 또는 derived(파생)
+# ──────────────────────────────────────────────
+variables:
+  LANG:
+    source: C2
+    description: "대화·커밋 언어"
+
+  PROJECT_NAME:
+    source: C3
+    description: "프로젝트 slug"
+
+  PLANNING_DIR:
+    source: C4
+    description: "planning 디렉토리 경로"
+    default: ".planning"
+
+  AGENT_MODEL:
+    source: C5
+    description: "서브에이전트 기본 모델"
+    default: "inherit"
+
+  PROJECT_TYPES:
+    source: C1
+    description: "선택된 타입 배열 (예: coding, writing)"
+    format: "comma_joined"
+
+  PRIMARY_LANG:
+    source: D1
+    description: "주 언어/런타임 (coding 전용)"
+    when: "includes(C1, coding)"
+
+  BUILD_CMDS:
+    source: D2
+    description: "빌드·타입체크 명령어 목록"
+    when: "includes(C1, coding)"
+    format: "newline_joined"
+
+  LINT_CMDS:
+    source: D3
+    description: "린트 명령어"
+    when: "includes(C1, coding) and D3 != none"
+    fallback: ""
+
+  TEST_CMDS:
+    source: D4
+    description: "테스트 명령어"
+    when: "includes(C1, coding) and D4 != none"
+    fallback: ""
+
+  EXTERNAL_SERVICES:
+    source: D6
+    description: "외부 서비스 쉼표 목록"
+    when: "includes(C1, coding) and includes(C6, fts-security-gate)"
+    fallback: ""
+
+  CITATION_FORMAT:
+    source: R2
+    description: "인용 포맷"
+    when: "includes(C1, research)"
+
+  DESIGN_TOOL:
+    source: S1
+    description: "디자인 툴 (첫 번째 선택값)"
+    when: "includes(C1, design)"
+    format: "first_value"
+
+  ASSET_PATH:
+    source: S2
+    description: "에셋 저장 경로"
+    when: "includes(C1, design)"
+    default: "assets/"
+
+  WCAG_LEVEL:
+    source: S3
+    description: "WCAG 준수 레벨"
+    when: "includes(C1, design)"
+    default: "AA"
+
+  DOC_TYPE:
+    source: W1
+    description: "문서 종류 (쉼표 목록)"
+    when: "includes(C1, writing)"
+    format: "comma_joined"
+
+  DOC_FORMAT:
+    source: W2
+    description: "주 포맷"
+    when: "includes(C1, writing)"
+
+  WRITING_LINT_TOOL:
+    source: W3
+    description: "맞춤법 도구"
+    when: "includes(C1, writing)"
+    fallback: "없음"
+
+  TODAY:
+    source: runtime
+    description: "실행 날짜 (YYYY-MM-DD)"
+
+  TEMPLATE_VERSION:
+    source: "manifest.version"
+    description: "manifest.yml 버전"
+
+  CHECKSUM:
+    source: derived
+    description: "렌더된 본문의 sha1 short (수기 편집 감지)"
+
+  EXECUTION_PHASE_LABEL:
+    source: derived
+    description: "coding 포함시 '구현', 아니면 '실행'"
+    rule: "if includes(C1, coding) then '구현' else '실행'"
+
+  IMPLEMENTER_ROLE_LABEL:
+    source: derived
+    description: "coding 포함시 '구현자', 아니면 '실행자'"
+    rule: "if includes(C1, coding) then '구현자' else '실행자'"
+
+  RULES_SECURITY_PATH:
+    source: derived
+    description: "설치된 보안 규칙 파일 경로"
+    rule: "if includes(C1, coding) or R3 == sensitive then '.claude/rules/03-security.md' else ''"
+
+  RULES_WORKFLOW_PATH:
+    source: derived
+    description: "설치된 워크플로 규칙 파일 경로"
+    value: ".claude/rules/02-workflow.md"
+
+  RESEARCH_IMPACT_SECTION:
+    source: derived
+    description: "타입별 영향 분석 블록"
+    rule: |
+      coding   → "빌드 타겟 영향 분석 (어떤 모듈·파일이 변경되는가)"
+      research → "자료 범위·섹션 영향 분석 (어떤 출처·챕터가 추가·수정되는가)"
+      design   → "화면·디자인 시스템 영향 분석 (어떤 컴포넌트·화면이 바뀌는가)"
+      writing  → "챕터·스타일 가이드 영향 분석 (어떤 섹션·표현 기준이 바뀌는가)"
+      multi    → 선택된 타입 순서대로 항목 union
+
+  DONE_GATE_BLOCK:
+    source: derived
+    description: "선택된 타입별 done-gate partial 조립"
+    rule: "선택된 각 타입의 done-gate.{type}.md partial을 순서대로 합친다"
+
+  BUILD_TARGETS_TABLE:
+    source: derived
+    description: "summary.md 빌드 결과 테이블 행"
+    rule: |
+      coding   → D2 명령어별 "| {cmd} | pass |" 행
+      research → "| 인용 검증 | pass |"
+      design   → "| 접근성 ({{WCAG_LEVEL}}) | pass |"
+      writing  → "| 맞춤법 | pass |"
+
+  STATUS_BUILD_BLOCK:
+    source: derived
+    description: "fts-status의 검증 출력 블록"
+    rule: |
+      coding  → BUILD_CMDS 실행 후 pass/fail 행 출력
+      비코딩  → "진행률: N/M done 기준 충족 · 최근 검증: {criteria}"
+
+  STATE_BUILD_SECTION:
+    source: derived
+    description: "STATE.md 빌드 상태 섹션 본문"
+    rule: |
+      coding  → "- Target: {{BUILD_CMDS}}"
+      비코딩  → "- 검증 대상: {type}-별 완료 기준 (done-gate 참조)"
+
+  SYNC_DOC_TARGETS:
+    source: derived
+    description: "fts-done 5b 동기화 표의 행 집합"
+    rule: "설치된 rules 파일 목록 기반으로 행 생성"
+
+  SECURITY_CHECKLIST:
+    source: derived
+    description: "rules/03-security.md 의 체크리스트 본문 (단일 출처)"
+    rule: "security-checklist.md partial + D5·D6 응답 기반 행 생성"
+
+  VERIFY_CRITERIA_HINTS:
+    source: derived
+    description: "planner의 verify 힌트 (verify-criteria-hints.md partial)"
+    rule: "선택된 타입 섹션만 포함"
+
+  WAVE_PATTERN_EXAMPLES:
+    source: derived
+    description: "planner의 Wave 패턴 예시"
+    rule: |
+      coding   → "Wave 1 데이터 모델 → Wave 2 비즈니스 로직 → Wave 3 통합"
+      research → "Wave 1 자료 수집 → Wave 2 분석·분류 → Wave 3 합성·보고서"
+      design   → "Wave 1 와이어프레임 → Wave 2 컴포넌트 → Wave 3 화면 완성"
+      writing  → "Wave 1 아웃라인 → Wave 2 초안 → Wave 3 편집·교정"
+      multi    → 첫 번째 타입 패턴 기준, 나머지는 병행 note로 추가
+
+  EXTERNAL_SERVICES_SECURITY_ROWS:
+    source: derived
+    description: "D6 외부 서비스별 보안 체크리스트 행"
+    when: "includes(C1, coding) and includes(C6, fts-security-gate)"
+    rule: "D6 각 서비스에 대해 '- [ ] {서비스} 자격증명 환경변수 관리' 행 생성"
+
+  SECRETS_OTHER:
+    source: derived
+    description: "D5의 custom 입력값 (있을 때만)"
+    when: "includes(D5, custom)"
+
+# ──────────────────────────────────────────────
+# 파일 목록
+# src: 이 저장소 내 경로 (src/fts-templates/ 기준)
+# dest: 프로젝트 내 생성 경로 (.claude/ 또는 .planning/ 기준)
+# requires_types: 해당 타입이 포함되어야 설치
+# requires_options: 해당 옵션이 선택되어야 설치
+# ──────────────────────────────────────────────
+files:
+  # 필수 명령어
+  - src: "commands/fts-start.template.md"
+    dest: ".claude/commands/fts-start.md"
+    required: true
+
+  - src: "commands/fts-done.template.md"
+    dest: ".claude/commands/fts-done.md"
+    required: true
+
+  - src: "commands/fts-resume.template.md"
+    dest: ".claude/commands/fts-resume.md"
+    required: true
+
+  - src: "commands/fts-status.template.md"
+    dest: ".claude/commands/fts-status.md"
+    required: true
+
+  # 옵션 명령어
+  - src: "commands/fts-verify.template.md"
+    dest: ".claude/commands/fts-verify.md"
+    requires_options: [fts-verify]
+
+  - src: "commands/fts-security-gate.template.md"
+    dest: ".claude/commands/fts-security-gate.md"
+    requires_options: [fts-security-gate]
+    requires_types: [coding]
+
+  # 규칙 파일
+  - src: "rules/01-language.template.md"
+    dest: ".claude/rules/01-language.md"
+    required: true
+
+  - src: "rules/02-workflow.template.md"
+    dest: ".claude/rules/02-workflow.md"
+    required: true
+
+  - src: "rules/03-security.template.md"
+    dest: ".claude/rules/03-security.md"
+    condition: "includes(C1, coding) or R3 == sensitive"
+
+  - src: "rules/04-coding.template.md"
+    dest: ".claude/rules/04-coding.md"
+    requires_types: [coding]
+
+  - src: "rules/05-research.template.md"
+    dest: ".claude/rules/05-research.md"
+    requires_types: [research]
+
+  - src: "rules/06-design.template.md"
+    dest: ".claude/rules/06-design.md"
+    requires_types: [design]
+
+  - src: "rules/07-writing.template.md"
+    dest: ".claude/rules/07-writing.md"
+    requires_types: [writing]
+
+  # 에이전트
+  - src: "agents/researcher.template.md"
+    dest: ".claude/agents/researcher.md"
+    required: true
+
+  - src: "agents/planner.template.md"
+    dest: ".claude/agents/planner.md"
+    required: true
+
+  - src: "agents/implementer.template.md"
+    dest: ".claude/agents/implementer.md"
+    required: true
+
+  - src: "agents/verifier.template.md"
+    dest: ".claude/agents/verifier.md"
+    requires_options: [fts-verify]
+
+  # Planning 구조
+  - src: "planning/STATE.template.md"
+    dest: ".planning/STATE.md"
+    required: true
+
+  - src: "planning/templates/task-plan.template.md"
+    dest: ".planning/templates/task-plan.md"
+    required: true
+
+# ──────────────────────────────────────────────
+# Partial 조립 규칙
+# ──────────────────────────────────────────────
+partials:
+  DONE_GATE_BLOCK:
+    description: "fts-done의 완료 gate 블록"
+    sources:
+      - src: "planning/templates/partials/done-gate.coding.md"
+        when: "includes(C1, coding)"
+      - src: "planning/templates/partials/done-gate.research.md"
+        when: "includes(C1, research)"
+      - src: "planning/templates/partials/done-gate.design.md"
+        when: "includes(C1, design)"
+      - src: "planning/templates/partials/done-gate.writing.md"
+        when: "includes(C1, writing)"
+    join: "\n\n"
+
+  SECURITY_CHECKLIST:
+    description: "fts-security-gate 체크리스트"
+    sources:
+      - src: "partials/security-checklist.md"
+        when: "includes(C1, coding) and includes(C6, fts-security-gate)"
+    join: "\n"
+
+  VERIFY_CRITERIA_HINTS:
+    description: "planner verify 힌트"
+    sources:
+      - src: "partials/verify-criteria-hints.md"
+        when: "always"
+    join: "\n"
+
+# ──────────────────────────────────────────────
+# 디렉토리 스캐폴드 (install 모드에서만)
+# ──────────────────────────────────────────────
+scaffold_dirs:
+  - ".planning/current"
+  - ".planning/archive"
+  - ".claude/commands"
+  - ".claude/rules"
+  - ".claude/agents"

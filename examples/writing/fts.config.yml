@@ -1,0 +1,18 @@
+# Q&A 응답 스냅샷 — 순수 writing 프로젝트 (기술 블로그)
+version: "1.0.0"
+template_version: "1.0.0"
+generated_at: "2026-04-19T00:00:00+09:00"
+
+# ── 공통 답변 ──
+types: [writing]
+language: "한국어"
+project_name: "tech-blog-2026"
+planning_dir: ".planning"
+agent_model: "inherit"
+optional_cmds: [fts-verify]
+overwrite_policy: "backup-then-overwrite"
+
+# ── writing 타입 답변 ──
+doc_type: "블로그/기사"
+doc_format: "Markdown"
+writing_lint_tool: "textlint"
