@@ -20,7 +20,7 @@
 
 ```bash
 git clone https://github.com/FullTimeScam/fts-transform-release.git
-cd fts-transform-release
+cd fts-transform-release/V1_2_0
 bash scripts/install.sh
 ```
 
