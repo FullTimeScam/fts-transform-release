@@ -2,7 +2,7 @@
 description: "현재 태스크를 완료하고 아카이브한다"
 ---
 
-<!-- AUTO-GENERATED v1.0.0 2026-04-19 sha1:<runtime> — /fts-transform to regenerate -->
+<!-- AUTO-GENERATED v1.1.0 2026-05-10 sha1:<runtime> — /fts-transform to regenerate -->
 
 # /fts:done
 
@@ -50,11 +50,7 @@ description: "현재 태스크를 완료하고 아카이브한다"
 
 ### 2. 보안 체크리스트
 
-`.planning/STATE.md` 의 보안 점검 상태를 확인.
-체크되지 않은 항목이 있으면:
-- `.claude/rules/03-security.md` 에 따라 점검
-- 문제가 없으면 체크 처리
-- 문제가 있으면 완료를 중단하고 보고
+`.planning/STATE.md` 의 보안 점검 상태 확인. 미체크 항목은 `.claude/rules/03-security.md` 로 점검 — 문제 없으면 체크, 있으면 완료 중단·보고.
 
 ### 3. Summary 생성
 

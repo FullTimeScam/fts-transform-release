@@ -2,7 +2,7 @@
 description: "현재 태스크를 완료하고 아카이브한다"
 ---
 
-<!-- AUTO-GENERATED v1.0.0 2026-04-19 sha1:<runtime> — /fts-transform to regenerate -->
+<!-- AUTO-GENERATED v1.2.0 2026-05-10 sha1:<runtime> — /fts-transform to regenerate -->
 
 # /fts:done
 
@@ -63,9 +63,8 @@ description: "현재 태스크를 완료하고 아카이브한다"
 
 ### 4. 아카이브
 
-- `.planning/current/{task-id}/` 폴더를 `.planning/archive/` 로 이동
-- STATE.md 의 세션 히스토리에 완료 기록 추가
-- STATE.md 의 현재 작업을 초기화 (Task ID, Phase 등을 `---` 로)
+- `.planning/current/{task-id}/` → `.planning/archive/` 이동
+- STATE.md 세션 히스토리에 완료 기록 추가, 현재 작업(Task ID, Phase) `---` 로 초기화
 
 ### 5. 문서 전반 동기화 (필수)
 

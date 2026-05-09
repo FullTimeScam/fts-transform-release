@@ -1,7 +1,7 @@
 # Q&A 응답 스냅샷 — 순수 writing 프로젝트 (기술 블로그)
-version: "1.0.0"
-template_version: "1.0.0"
-generated_at: "2026-04-19T00:00:00+09:00"
+version: "1.1.0"
+template_version: "1.1.0"
+generated_at: "2026-05-10T00:00:00+09:00"
 
 # ── 공통 답변 ──
 types: [writing]

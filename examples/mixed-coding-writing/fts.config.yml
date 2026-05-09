@@ -1,7 +1,7 @@
 # Q&A 응답 스냅샷 — coding + writing 혼합 (Python + 기술 문서)
-version: "1.0.0"
-template_version: "1.0.0"
-generated_at: "2026-04-19T00:00:00+09:00"
+version: "1.2.0"
+template_version: "1.2.0"
+generated_at: "2026-05-10T00:00:00+09:00"
 
 # ── 공통 답변 ──
 types: [coding, writing]
