@@ -1,0 +1,20 @@
+# Q&A 응답 스냅샷 — 순수 research 프로젝트 (문헌 조사)
+version: "1.0.0"
+template_version: "1.0.0"
+generated_at: "2026-04-19T00:00:00+09:00"
+
+# ── 공통 답변 ──
+types: [research]
+language: "한국어"
+project_name: "llm-eval-survey"
+planning_dir: ".planning"
+agent_model: "opus"
+optional_cmds: [fts-verify]
+overwrite_policy: "backup-then-overwrite"
+
+# ── research 타입 답변 ──
+research_sources:
+  - "학술 논문"
+  - "웹 문서"
+citation_format: "Markdown 각주"
+sensitive_info: "없음"

@@ -1,0 +1,45 @@
+---
+description: "프로젝트 보안 규칙 (coding 타입 또는 민감 정보 포함시 설치)"
+---
+
+<!-- AUTO-GENERATED v{{TEMPLATE_VERSION}} {{TODAY}} sha1:{{CHECKSUM}} — /fts-transform to regenerate -->
+
+# 보안 규칙 (항상 적용)
+
+## 공통 원칙
+
+- 시크릿·키·토큰을 코드·산출물·커밋 메시지에 하드코딩하지 마라.
+- keypair·wallet·seed 관련 파일은 읽기 전용으로만 다룬다. 수정·삭제하지 마라.
+- `.env` 파일은 읽을 수 있지만 수정하지 마라.
+- 모든 외부 서비스 자격증명은 환경변수로 관리해라.
+
+## 이 프로젝트의 관리 대상
+
+{{SECURITY_CHECKLIST}}
+
+## 외부 서비스
+
+{{#if EXTERNAL_SERVICES}}
+다음 서비스의 자격증명·URL 은 반드시 환경변수로만 관리한다:
+
+{{EXTERNAL_SERVICES}}
+{{else}}
+외부 서비스가 등록되지 않았다. 새 서비스를 추가할 때는 즉시 이 목록을 갱신해라.
+{{/if}}
+
+## 커밋·PR 전 점검
+
+{{#if git_enabled}}
+- `git diff --staged` 에서 시크릿 패턴(API key, private key, seed phrase) 검색.
+- `.env`, `*.keypair`, `*.wallet`, `secrets/*` 가 스테이지에 없는지 확인.
+{{else}}
+- 제출·공유 전 산출물에 시크릿 패턴(API key, private key, seed phrase) 미포함 확인.
+- `.env`, `*.keypair`, `*.wallet`, `secrets/*` 가 공유 대상에 없는지 확인.
+{{/if}}
+
+## 위반시 대응
+
+1. 즉시 작업 중단.
+2. 유출된 시크릿이 있으면 해당 시크릿을 먼저 회전(rotate)·폐기.
+3. 커밋 히스토리·산출물에서 제거.
+4. STATE.md 의 보안 점검 항목에 사건을 기록.

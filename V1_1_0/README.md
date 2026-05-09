@@ -1,6 +1,8 @@
 # fts-transform
 ## **find, track, ship**
 
+> 현재 버전: **v1.1.0** ([CHANGELOG](CHANGELOG.md))
+
 `/fts-transform` 은 Claude Code 환경에서 프로젝트 워크플로우를 자동 설정하는 글로벌 슬래시 명령어다. 아래 3단계로 설치·사용이 완료된다.
 
 ## **문제와 해법**
@@ -9,13 +11,16 @@
 ## **배경**
 — 코딩 전용 워크플로우였던 `gsd` 를 참고해 만들었다. 여기서는 이를 코딩을 넘어 research·design·writing 까지 확장해, 타입별로 템플릿·게이트·에이전트가 다르게 조립된다.
 
+## **v1.1.0 변경점**
+— 토큰·컨텍스트 압축으로 자동 로드 파일이 가벼워졌고(-127줄 / 약 -3.8K 토큰), 누적된 설계 결함 8건이 정리됐다. 무결성 자동 검증 스크립트(`scripts/validate.sh`) 도 새로 추가됐다. 상세는 [CHANGELOG.md](CHANGELOG.md).
+
 ---
 
 ## 1. 설치 (1회)
 
 ```bash
 git clone https://github.com/FullTimeScam/fts-transform-release.git
-cd fts-transform-release
+cd fts-transform-release/V1_1_0
 bash scripts/install.sh
 ```
 
@@ -67,6 +72,18 @@ Q&A 가 진행된다. 핵심 응답 항목만 기재한다.
 | `sync` | Q&A 생략, 템플릿 업데이트만 반영 |
 
 수기 편집 파일은 `.bak-{타임스탬프}` 로 자동 백업된다.
+
+---
+
+## 무결성 점검 (선택)
+
+릴리즈 패키지 자체의 정합성을 확인하려면:
+
+```bash
+bash scripts/validate.sh
+# 1) 하드코딩 누출  2) 변수↔manifest 정합성  3) install.sh --dry-run 카운트(=27)  4) 조건블록 짝
+# → "✅ 모든 검증 통과 (4/4)" 출력 + exit 0
+```
 
 ---
 

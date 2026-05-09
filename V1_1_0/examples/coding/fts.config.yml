@@ -1,0 +1,32 @@
+# Q&A 응답 스냅샷 — 순수 coding 프로젝트
+# /fts-transform 실행 시 프로젝트의 .claude/fts.config.yml 에 저장되는 형태
+version: "1.0.0"
+template_version: "1.0.0"
+generated_at: "2026-04-19T00:00:00+09:00"
+
+# ── 공통 답변 ──
+types: [coding]
+language: "한국어"
+project_name: "backend-api"
+planning_dir: ".planning"
+agent_model: "inherit"
+optional_cmds: [fts-verify, fts-security-gate]
+overwrite_policy: "backup-then-overwrite"
+
+# ── coding 타입 답변 ──
+primary_lang: "TS/Node"
+build_cmds:
+  - "npx tsc --noEmit"
+lint_cmds:
+  - "biome check ."
+test_cmds:
+  - "npm test"
+secrets:
+  - "API 키"
+  - "DB 크리덴셜"
+external_services:
+  - "PostgreSQL"
+  - "Redis"
+
+# ── 미사용 타입 답변 (skipped) ──
+# research_*, design_*, writing_* 미입력
